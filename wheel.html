@@ -71,9 +71,10 @@
 <script>
 (function () {
   var COUPON = "COUPON123", WIN_INDEX = 0, TURNS = 5, DURATION = 4500;
-  // Decorative segments; WIN_INDEX is the 30% OFF slice and is the only one ever landed on.
-  var LABELS = ["30% OFF", "TRY AGAIN?", "30% OFF", "BONUS", "30% OFF", "SURPRISE"];
-  var COLORS = ["#ff6b42", "#1d2b36", "#faa419", "#1d2b36", "#f47d15", "#1d2b36"];
+  // WIN_INDEX is the 30% OFF slice and is the only one ever landed on.
+  var LABELS = ["30% OFF", "5% OFF", "10% OFF", "TRY AGAIN", "5% OFF", "10% OFF"];
+  var COLORS = ["#ffd700", "#ffc9d9", "#b9e4f7", "#e3d4f5", "#c9f0d6", "#ffe0bd"];
+  var TEXT = "#2b3a47";
   var root = document.getElementById("ghw"), wheel = document.getElementById("ghw-wheel"),
       rotor = document.getElementById("ghw-rotor"), copyBtn = document.getElementById("ghw-copy"),
       note = document.getElementById("ghw-note"), spun = false, n = LABELS.length, seg = 360 / n;
@@ -90,7 +91,7 @@
     t.setAttribute("x", p[0]); t.setAttribute("y", p[1]); t.setAttribute("text-anchor", "middle");
     t.setAttribute("dominant-baseline", "middle"); t.setAttribute("transform", "rotate(" + (i * seg) + " " + p[0] + " " + p[1] + ")");
     t.setAttribute("font-family", "Source Sans Pro, Arial, sans-serif"); t.setAttribute("font-weight", "900");
-    t.setAttribute("font-size", "17"); t.setAttribute("fill", "#fff"); t.textContent = label;
+    t.setAttribute("font-size", "17"); t.setAttribute("fill", TEXT); t.textContent = label;
     rotor.appendChild(t);
   });
 
