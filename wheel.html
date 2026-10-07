@@ -1,0 +1,126 @@
+<!-- GameHouse Black Friday spin-to-win wheel. Paste into a getsitecontrol custom-HTML widget. No external JS, no logos. -->
+<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,900&display=swap" rel="stylesheet">
+<style>
+  .ghw, .ghw * { box-sizing: border-box; }
+  .ghw {
+    --blue: #2eb2ea; --orange: #ff6b42; --amber: #faa419; --dark: #1d2b36; --light: #f2f2f2;
+    font-family: "Source Sans Pro", Arial, sans-serif; color: #fff; text-align: center;
+    max-width: 440px; margin: 0 auto; padding: 24px 20px 28px; border-radius: 6px;
+    background: linear-gradient(160deg, #2eb2ea 0%, #1b86b8 100%);
+    box-shadow: 0 8px 30px rgba(0,0,0,.35);
+  }
+  .ghw h2 { margin: 0 0 4px; font-size: 30px; font-weight: 900; line-height: 1.1; text-transform: uppercase; letter-spacing: .5px; }
+  .ghw p { margin: 0 0 16px; font-size: 16px; opacity: .95; }
+  .ghw-stage { position: relative; width: 100%; max-width: 320px; margin: 18px auto 18px; aspect-ratio: 1; }
+  .ghw-wheel {
+    width: 100%; height: 100%; display: block; border: 0; padding: 0; border-radius: 50%; cursor: pointer;
+    background: none; filter: drop-shadow(0 4px 8px rgba(0,0,0,.35)); -webkit-tap-highlight-color: transparent;
+  }
+  .ghw-wheel:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+  .ghw-wheel[disabled] { cursor: default; }
+  .ghw-rotor { transform-origin: 50% 50%; }
+  .ghw-pointer { position: absolute; top: -6px; left: 50%; width: 30px; margin-left: -15px; pointer-events: none; filter: drop-shadow(0 2px 3px rgba(0,0,0,.4)); }
+  .ghw-btn {
+    display: inline-block; border: 0; border-radius: 4px; padding: 12px 28px; font: 700 18px "Source Sans Pro", Arial, sans-serif;
+    text-transform: uppercase; color: #fff; background: var(--orange); cursor: pointer; box-shadow: 0 3px 0 #c9482a;
+  }
+  .ghw-btn:hover { background: #f47d15; }
+  .ghw-btn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  .ghw-btn[disabled] { opacity: .6; cursor: default; }
+  .ghw-result { display: none; }
+  .ghw.ghw-won .ghw-play { display: none; }
+  .ghw.ghw-won .ghw-result { display: block; }
+  .ghw-code {
+    display: flex; gap: 8px; align-items: stretch; justify-content: center; margin: 12px auto 0; max-width: 340px;
+  }
+  .ghw-code span {
+    flex: 1; background: #fff; color: var(--dark); border: 2px dashed var(--orange); border-radius: 4px;
+    font: 900 24px "Source Sans Pro", Arial, sans-serif; letter-spacing: 2px; padding: 8px 10px; user-select: all;
+  }
+  .ghw-code .ghw-btn { padding: 8px 16px; font-size: 16px; }
+  .ghw-note { margin-top: 10px; font-size: 14px; min-height: 18px; }
+  @media (max-width: 380px) { .ghw h2 { font-size: 24px; } .ghw-code span { font-size: 20px; } }
+</style>
+
+<div class="ghw" id="ghw">
+  <h2>Black Friday Spin &amp; Win</h2>
+  <p class="ghw-play">Tap the wheel to spin. Everyone wins!</p>
+  <div class="ghw-stage">
+    <button type="button" class="ghw-wheel" id="ghw-wheel" aria-label="Spin the wheel">
+      <svg viewBox="0 0 300 300" aria-hidden="true">
+        <g class="ghw-rotor" id="ghw-rotor"></g>
+        <circle cx="150" cy="150" r="146" fill="none" stroke="#fff" stroke-width="8"/>
+        <circle cx="150" cy="150" r="30" fill="#fff"/>
+        <circle cx="150" cy="150" r="22" fill="#ff6b42"/>
+        <text x="150" y="156" text-anchor="middle" font-family="Source Sans Pro, Arial, sans-serif" font-size="14" font-weight="900" fill="#fff">SPIN</text>
+      </svg>
+    </button>
+    <svg class="ghw-pointer" viewBox="0 0 30 36" aria-hidden="true"><path d="M15 36 2 8a15 15 0 0 1 26 0z" fill="#fff"/><circle cx="15" cy="11" r="4" fill="#ff6b42"/></svg>
+  </div>
+  <div class="ghw-result" id="ghw-result" aria-live="polite">
+    <h2>You won 30% off!</h2>
+    <p>Use this code at checkout:</p>
+    <div class="ghw-code">
+      <span id="ghw-code">COUPON123</span>
+      <button type="button" class="ghw-btn" id="ghw-copy">Copy</button>
+    </div>
+    <div class="ghw-note" id="ghw-note"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var COUPON = "COUPON123", WIN_INDEX = 0, TURNS = 5, DURATION = 4500;
+  // WIN_INDEX is the 30% OFF slice and is the only one ever landed on.
+  var LABELS = ["30% OFF", "5% OFF", "10% OFF", "TRY AGAIN", "5% OFF", "10% OFF"];
+  var COLORS = ["#ffd700", "#ffc9d9", "#b9e4f7", "#e3d4f5", "#c9f0d6", "#ffe0bd"];
+  var TEXT = "#2b3a47";
+  var root = document.getElementById("ghw"), wheel = document.getElementById("ghw-wheel"),
+      rotor = document.getElementById("ghw-rotor"), copyBtn = document.getElementById("ghw-copy"),
+      note = document.getElementById("ghw-note"), spun = false, n = LABELS.length, seg = 360 / n;
+  var NS = "http://www.w3.org/2000/svg";
+
+  function pt(a, r) { var t = (a - 90) * Math.PI / 180; return [150 + r * Math.cos(t), 150 + r * Math.sin(t)]; }
+  LABELS.forEach(function (label, i) {
+    var a0 = i * seg - seg / 2, a1 = a0 + seg, p0 = pt(a0, 142), p1 = pt(a1, 142);
+    var path = document.createElementNS(NS, "path");
+    path.setAttribute("d", "M150 150L" + p0 + "A142 142 0 0 1 " + p1 + "Z");
+    path.setAttribute("fill", COLORS[i]); path.setAttribute("stroke", "#fff"); path.setAttribute("stroke-width", "2");
+    rotor.appendChild(path);
+    var t = document.createElementNS(NS, "text"), p = pt(i * seg, 98);
+    t.setAttribute("x", p[0]); t.setAttribute("y", p[1]); t.setAttribute("text-anchor", "middle");
+    t.setAttribute("dominant-baseline", "middle"); t.setAttribute("transform", "rotate(" + (i * seg) + " " + p[0] + " " + p[1] + ")");
+    t.setAttribute("font-family", "Source Sans Pro, Arial, sans-serif"); t.setAttribute("font-weight", "900");
+    t.setAttribute("font-size", "17"); t.setAttribute("fill", TEXT); t.textContent = label;
+    rotor.appendChild(t);
+  });
+
+  function reveal() { root.classList.add("ghw-won"); copyBtn.focus(); }
+
+  wheel.addEventListener("click", function () {
+    if (spun) return; spun = true; wheel.disabled = true;
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Pointer sits at top (0deg); rotating by -(WIN_INDEX*seg) plus full turns brings the win slice under it.
+    var end = TURNS * 360 - WIN_INDEX * seg;
+    if (reduce) { rotor.style.transform = "rotate(" + end + "deg)"; reveal(); return; }
+    rotor.style.transition = "transform " + DURATION + "ms cubic-bezier(.17,.67,.12,1)";
+    rotor.style.transform = "rotate(" + end + "deg)";
+    var done = false;
+    function finish() { if (!done) { done = true; reveal(); } }
+    rotor.addEventListener("transitionend", finish);
+    setTimeout(finish, DURATION + 300);
+  });
+
+  copyBtn.addEventListener("click", function () {
+    function ok() { note.textContent = "Code copied!"; copyBtn.textContent = "Copied"; }
+    function fallback() {
+      var r = document.createRange(); r.selectNodeContents(document.getElementById("ghw-code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      try { document.execCommand("copy") ? ok() : (note.textContent = "Press Ctrl/Cmd+C to copy"); }
+      catch (e) { note.textContent = "Press Ctrl/Cmd+C to copy"; }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(COUPON).then(ok, fallback);
+    else fallback();
+  });
+})();
+</script>
