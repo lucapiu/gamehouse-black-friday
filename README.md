@@ -4,10 +4,10 @@ Black Friday marketing campaign for GameHouse.com: a spin-to-win wheel popup.
 
 ## What it does
 
-`wheel.html` is a self-contained widget (inline HTML, CSS, JS; no logos, no tracking, no backend).
+`wheel.html` is a self-contained widget (inline HTML, CSS, JS; no logos, no backend). The only external request is the Source Sans Pro font from Google Fonts.
 
 - The visitor clicks the wheel to start it; it never spins on its own.
-- The wheel always lands on the **30% OFF** slice. Other slices are decorative.
+- The wheel always lands on the same **30% OFF** slice (`WIN_INDEX`). The other slices are decorative.
 - It then reveals the code `COUPON123` with a **Copy** button.
 - Styled with gamehouse.com's palette (sky blue `#2eb2ea`, orange `#ff6b42`) and the Source Sans Pro font.
 - Responsive from phone to desktop, and honors `prefers-reduced-motion` (skips the animation and shows the code).
